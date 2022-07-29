@@ -1,24 +1,25 @@
 <?php
-
-$html = "https://compras.natal.rn.gov.br/paginas/licitacoes/consulta/?mod=5";
-
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, $html);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-$webPage = curl_exec($ch);
-curl_close ($ch);
-
-$dom = new DOMDocument();
-$dom->loadHTML($webPage);
-$td = $dom->getElementsByTagName('td');
-
-$bids = [];
-$cont = 0;
-foreach ($td as $element) {
-  $text = $element->textContent;
-
-  switch($cont){
+  $html = "https://compras.natal.rn.gov.br/paginas/licitacoes/consulta/?mod=5";
+  
+  $ch = curl_init();
+  curl_setopt($ch, CURLOPT_URL, $html);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+  
+  $webPage = curl_exec($ch);
+  curl_close ($ch);
+ 
+  $enconde = utf8_encode($webPage);
+  //echo $enconde;
+  
+  $dom = new DOMDocument(); 
+  $dom->loadHTML($webPage);
+  $td = $dom->getElementsByTagName('td');
+  
+  $bids = [];
+  $cont = 0;
+  foreach ($td as $element) {
+    $text = $element->textContent;
+    switch($cont){
     case '0': 
       $licitacao = $text;
       break;
@@ -38,12 +39,12 @@ foreach ($td as $element) {
       $goal = $text;
       break;
     default: echo 'errro';
-    }
-  
+  }
+
   $cont++;
   if($cont == 6){
     array_push($bids, array(
-      "biddingNumber" =>  $licitacao,
+      "biddingNumber" => $licitacao,
       "process" => $process,
       "type" => $type,
       "organ" => $organ,
@@ -57,15 +58,19 @@ foreach ($td as $element) {
     $organ = null;
     $date = null;
     $goal = null;
-
+    
     $cont=0;
+    }
   }
-}
-$json = json_encode($bids, JSON_UNESCAPED_UNICODE + JSON_UNESCAPED_SLASHES + JSON_PRETTY_PRINT);
+  
+  //print_r($bids);
+  $bidsJson = json_encode($bids,JSON_UNESCAPED_UNICODE + JSON_UNESCAPED_SLASHES + JSON_PRETTY_PRINT);
+  echo "<pre>$bidsJson</pre>";
+  
+  $bidsFile = fopen('bidsFile.json', 'w');
+  fwrite($bidsFile, $bidsJson);
+  fclose($bidsFile);
 
-echo "<pre>$json</pre>";
-
-print_r($td);
 ?>
 
 

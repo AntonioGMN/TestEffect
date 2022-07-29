@@ -1,0 +1,36 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model bids {
+  id            Int    @id @default(autoincrement())
+  biddingNumber String @unique
+  process       String
+  type          String
+  organ         String
+  date          String
+  goal          String
+  read          read[]
+}
+
+model user {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  read read[]
+}
+
+model read {
+  id     Int  @id @default(autoincrement())
+  user   user @relation(fields: [userID], references: [id])
+  userID Int
+  bids   bids @relation(fields: [bidsId], references: [id])
+  bidsId Int
+}
